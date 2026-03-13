@@ -29,5 +29,16 @@ services:
     depends_on:
       - backend
 
+  ngrok:
+    image: ngrok/ngrok:latest
+    restart: always
+    environment:
+      - NGROK_AUTHTOKEN=${NGROK_AUTHTOKEN}
+    command:
+      - http
+      - frontend:80
+    depends_on:
+      - frontend
+
 volumes:
   backend_data:

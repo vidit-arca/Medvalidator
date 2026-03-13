@@ -41,8 +41,8 @@ env/
 .DS_Store
 Thumbs.db
 
-# Database & Storage
-medical_bills.db
+# Database & Storage (Database included as requested)
+# medical_bills.db
 raw_storage/
 data/
 
