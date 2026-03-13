@@ -1,0 +1,15 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-background text-zinc-100 antialiased;
+  }
+}
+
+@layer utilities {
+  .glass {
+    @apply bg-zinc-900/70 backdrop-blur-xl border border-zinc-800/50 shadow-xl;
+  }
+}

@@ -1,0 +1,11 @@
+fastapi
+uvicorn[standard]
+sqlmodel
+pydantic
+requests
+python-multipart
+ollama
+alembic
+python-dotenv
+pandas
+openpyxl
