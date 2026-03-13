@@ -40,17 +40,3 @@ env/
 # OS
 .DS_Store
 Thumbs.db
-
-# Database & Storage (Database included as requested)
-# medical_bills.db
-raw_storage/
-data/
-
-# Large Data Files
-*.csv
-*.xlsx
-*.jpg
-*.pdf
-*.png
-!test_bill.png
-!Medical bills Workflow.png

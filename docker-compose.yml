@@ -1,44 +1,21 @@
 version: '3.8'
 
 services:
-  backend:
-    build:
-      context: .
-      dockerfile: Dockerfile.backend
-    container_name: medical-bill-backend
-    restart: always
+  db:
+    image: postgres:15
     environment:
-      - DATABASE_URL=sqlite:///./data/medical_bills.db
-      - OLLAMA_BASE_URL=http://host.docker.internal:11434
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: medical_bills
+    ports:
+      - "5432:5432"
     volumes:
-      - backend_data:/app/data
-      - ./raw_storage:/app/raw_storage
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
-    ports:
-      - "8000:8000"
+      - postgres_data:/var/lib/postgresql/data
 
-  frontend:
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile.frontend
-    container_name: medical-bill-frontend
-    restart: always
+  redis:
+    image: redis:7
     ports:
-      - "80:80"
-    depends_on:
-      - backend
-
-  ngrok:
-    image: ngrok/ngrok:latest
-    restart: always
-    environment:
-      - NGROK_AUTHTOKEN=${NGROK_AUTHTOKEN}
-    command:
-      - http
-      - frontend:80
-    depends_on:
-      - frontend
+      - "6379:6379"
 
 volumes:
-  backend_data:
+  postgres_data:
