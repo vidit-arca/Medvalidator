@@ -20,7 +20,6 @@ import os
 os.makedirs("raw_storage", exist_ok=True)
 app.mount("/raw_storage", StaticFiles(directory="raw_storage"), name="raw_storage")
 
-
 @app.on_event("startup")
 def on_startup():
     init_db()

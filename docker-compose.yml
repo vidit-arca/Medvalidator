@@ -1,6 +1,34 @@
-version: '3.8'
-
 services:
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: viditk03/medical-bills-backend:latest
+    ports:
+      - "8000:8000"
+    environment:
+      # Use PostgreSQL instead of SQLite
+      - DATABASE_URL=postgresql://user:password@db:5432/medical_bills
+      - REDIS_URL=redis://redis:6379
+      # Connect to external Ollama instance
+      - OLLAMA_BASE_URL=http://192.168.112.2:11434
+    volumes:
+      # Keep raw_storage mounted to host for persistence of uploaded files
+      - ./raw_storage:/app/raw_storage
+    depends_on:
+      - db
+      - redis
+
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+    image: viditk03/medical-bills-frontend:latest
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+
   db:
     image: postgres:15
     environment:

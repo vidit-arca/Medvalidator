@@ -26,10 +26,10 @@ class Orchestrator:
 
                 # 2. OCR Extraction
                 file_path = os.path.join("raw_storage", f"{bill_id}_{bill.filename}")
-                # 2. OCR Extraction (Switched to Landing AI)
-                from app.services.landing_ocr import landing_ocr_service
+                # 2. OCR Extraction (Switched to Marker OCR via Triton)
+                from app.services.marker_ocr import marker_ocr_service
                 file_path = os.path.join("raw_storage", f"{bill_id}_{bill.filename}")
-                raw_text = landing_ocr_service.extract_text(file_path)
+                raw_text = marker_ocr_service.extract_text(file_path)
                 
                 # [UPDATED] Use LLM for Extraction instead of Regex
                 extracted_items_dicts = await llm_service.extract_items_from_text(raw_text)

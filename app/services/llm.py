@@ -79,31 +79,33 @@ class LLMService:
 
     def _construct_extraction_prompt(self, ocr_text: str) -> str:
         return f"""
-You are an expert medical bill data extractor. Your task is to extract medical items from the provided document text (which may be in Markdown format with tables).
+You are an expert medical bill data extractor.
+Your task is to extract individual medical items and their prices from the provided OCR text.
 
 Document Content:
 {ocr_text}
 
-Rules:
-1. EXAMINE HTML TABLES CAREFULLY. The data is in HTML format with `<table>`, `<tr>`, `<td>` tags.
-2. Identify the core medicine/procedure name even if the column header is not "Medicine Name" (could be "Description", "Items", "Service", etc.).
-3. Extract the LINE ITEM PRICE (not the unit price). Look for columns like "Total", "Net Amount", "Amount", "Price", or any numeric value at the end of the row.
-4. Extract ONLY medical items (medicines, tablets, syrups, injections, lab tests, procedures) with their prices.
-5. Ignore: person names, addresses, tax lines, totals, "round off", "discount", "payable amount", headers.
-6. For each item found in the table, extract:
-   - "item_name": The full name of the medicine or test.
-   - "quantity": The quantity as a number (default to 1 if not found).
-   - "price": The total price for this line item (as a number).
-7. Output strictly in JSON format. Do not return markdown code blocks or any other text.
-8. If the price is missing, set "price": 0.0.
+CRITICAL RULES:
+1. The data is formatted as a Markdown table (rows separated by newlines, columns separated by `|`).
+2. PROCESS THE TABLE ROW BY ROW. DO NOT combine or concatenate items from different rows together.
+3. For EVERY SINGLE ROW in the table that contains a product, extract exactly ONE item.
+4. The "item_name" is typically in the second or third column (e.g., "PRODUCT NAME", "Description").
+5. The "price" or "AMOUNT" is typically in the last few columns. Extract the final line amount.
+6. Extract ONLY medical items (medicines, tablets, lab tests). Ignore taxes, subtotals, and blank rows.
+7. Output strictly in JSON format matching the schema below. Do not add any extra text.
 
 Output Format:
 {{
   "medical_items": [
     {{
-      "item_name": "Dolo 650",
-      "quantity": 10,
-      "price": 30.50
+      "item_name": "DYTOR 10 TAB",
+      "quantity": 2,
+      "price": 219.14
+    }},
+    {{
+      "item_name": "DAPANARY-10M FORTE TAB",
+      "quantity": 2,
+      "price": 432.00
     }}
   ]
 }}
