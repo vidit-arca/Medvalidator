@@ -44,8 +44,8 @@ class LLMService:
                 print(f"LLM Error: {e}")
                 return MappingResult(procedure_code=None, confidence=0.0, reason=f"LLM Error: {str(e)}")
 
-    async def extract_items_from_text(self, ocr_text: str) -> List[Dict]:
-        prompt = self._construct_extraction_prompt(ocr_text)
+    async def extract_items_from_text(self, parsed_json_str: str) -> List[Dict]:
+        prompt = self._construct_extraction_prompt(parsed_json_str)
         
         async with httpx.AsyncClient() as client:
             try:
@@ -77,38 +77,44 @@ class LLMService:
                 traceback.print_exc()
                 return []
 
-    def _construct_extraction_prompt(self, ocr_text: str) -> str:
+    def _construct_extraction_prompt(self, parsed_json_str: str) -> str:
         return f"""
-You are an expert medical bill data extractor.
-Your task is to extract individual medical items and their prices from the provided OCR text.
+You are an expert medical document data extractor.
+You are receiving the extracted content from a medical bill or prescription. 
+It may be a JSON array of table rows, or raw OCR text.
 
 Document Content:
-{ocr_text}
+{parsed_json_str}
 
-CRITICAL RULES:
-1. The data is formatted as a Markdown table (rows separated by newlines, columns separated by `|`).
-2. PROCESS THE TABLE ROW BY ROW. DO NOT combine or concatenate items from different rows together.
-3. For EVERY SINGLE ROW in the table that contains a product, extract exactly ONE item.
-4. The "item_name" is typically in the second or third column (e.g., "PRODUCT NAME", "Description").
-5. The "price" or "AMOUNT" is typically in the last few columns. Extract the final line amount.
-6. Extract ONLY medical items (medicines, tablets, lab tests). Ignore taxes, subtotals, and blank rows.
-7. Output strictly in JSON format matching the schema below. Do not add any extra text.
+CRITICAL EXTRACTION RULES:
 
-Output Format:
-{{
-  "medical_items": [
-    {{
-      "item_name": "DYTOR 10 TAB",
-      "quantity": 2,
-      "price": 219.14
-    }},
-    {{
-      "item_name": "DAPANARY-10M FORTE TAB",
-      "quantity": 2,
-      "price": 432.00
-    }}
-  ]
-}}
+1. **First, identify the document type based on the JSON keys**.
+
+2. **If it is a GST Invoice / Medicine Bill (Has keys like AMOUNT, NETAMT, MRP)**:
+   - Extract each medicine item with its name, quantity, and the FINAL amount.
+   - DO NOT extract MRP or RATE as the price. Look for keys like `AMOUNT`, `NETAMT`, `Gross Amount`.
+   - Ignore dictionaries representing taxes, GST, subtotals, and grand total.
+
+3. **If it is a Prescription Slip / NASLIP (Has keys like IQT, PQT, Nomenclature, but NO amounts)**:
+   - Extract each medicine with its name and quantity from the `IQT` or `Qty` key.
+   - Set price to 0.0 for all items since no prices are available on the document.
+   - Ignore items where the quantity is "N/A" (not dispensed).
+
+4. Extract ONLY medical items (medicines, tablets, lab tests). 
+5. Output strictly in JSON format matching the schema below. Do not add any extra text.
+6. NEVER hallucinate names. Extract the actual medicine names from the JSON content!
+
+EXAMPLE - GST Invoice output:
+{{"medical_items": [
+  {{"item_name": "BUDECORT 0.5 RESP", "quantity": 60, "price": 1599.00}},
+  {{"item_name": "DUOLIN RESPULES 3", "quantity": 60, "price": 1496.40}}
+]}}
+
+EXAMPLE - Prescription output:
+{{"medical_items": [
+  {{"item_name": "ATORVASTATIN 20 MG TAB", "quantity": 15, "price": 0.0}},
+  {{"item_name": "PANTOPRAZOLE 40 MG TAB", "quantity": 30, "price": 0.0}}
+]}}
 
 Response:
 """

@@ -25,14 +25,26 @@ class Orchestrator:
                 audit_service.log_event(session, bill_id, "ORCHESTRATOR", {"action": "start_processing"}, {"status": "PROCESSING"})
 
                 # 2. OCR Extraction
-                file_path = os.path.join("raw_storage", f"{bill_id}_{bill.filename}")
-                # 2. OCR Extraction (Switched to Marker OCR via Triton)
                 from app.services.marker_ocr import marker_ocr_service
+                from app.services.ocr import ocr_service
+                
                 file_path = os.path.join("raw_storage", f"{bill_id}_{bill.filename}")
                 raw_text = marker_ocr_service.extract_text(file_path)
                 
-                # [UPDATED] Use LLM for Extraction instead of Regex
-                extracted_items_dicts = await llm_service.extract_items_from_text(raw_text)
+                # Fallback to Tesseract/Unstructured if Marker OCR fails (e.g. Triton model not found)
+                if not raw_text or raw_text.strip() == "":
+                    print(f"Marker OCR failed or returned empty for {file_path}. Falling back to OCRService.")
+                    raw_text = ocr_service.extract_text(file_path)
+                # 3. Parse Markdown Table into JSON
+                from app.services.markdown_parser import markdown_parser
+                parsed_json = markdown_parser.parse_to_json(raw_text)
+                
+                if parsed_json.strip() == "[]":
+                    print("Markdown parser found no tables. Passing raw text to LLM.")
+                    parsed_json = raw_text
+
+                # 4. LLM Extraction
+                extracted_items_dicts = await llm_service.extract_items_from_text(parsed_json)
                 
                 audit_service.log_event(session, bill_id, "OCR_LLM", {"file": file_path}, {"extracted_items_count": len(extracted_items_dicts), "raw_items": extracted_items_dicts})
 
@@ -48,6 +60,13 @@ class Orchestrator:
                     # Create Line Item Record
                     # Handle potential missing keys or bad formats from LLM
                     item_name = item_dict.get("item_name", "Unknown Item")
+                    if isinstance(item_name, str):
+                        item_name = item_name.strip()
+                        
+                    # Skip empty items or garbage items
+                    if not item_name or item_name == "Unknown Item":
+                        continue
+                        
                     try:
                         price = float(item_dict.get("price", 0))
                     except:

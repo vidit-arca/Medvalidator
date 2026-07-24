@@ -5,7 +5,7 @@ class Settings(BaseSettings):
     DATABASE_URL: str = "sqlite:///./medical_bills.db"
     REDIS_URL: str = "redis://localhost:6379"
     OLLAMA_BASE_URL: str = "http://192.168.112.2:11434"
-    MISTRAL_MODEL: str = "mistral"
+    MISTRAL_MODEL: str = "qwen2.5-coder:7b"
     TRITON_SERVER_URL: str = "http://192.168.112.2:8000"  # Triton inference server URL
     TRITON_MARKER_MODEL_NAME: str = "marker_model"  # Name of the Marker model on Triton
 

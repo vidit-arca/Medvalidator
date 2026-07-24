@@ -5,7 +5,7 @@ from sqlmodel import Session, select
 from app.core.database import engine, init_db
 from app.models import MasterPrice
 
-CSV_FILE = "Item Master & stock with Tax (1).csv"
+CSV_FILE = "master data/Item Master & stock with Tax (1).csv"
 
 def parse_decimal(value):
     if not value or value.strip() == "":

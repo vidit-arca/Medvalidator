@@ -1,0 +1,8 @@
+{
+  "source_file": "/Users/apple/Desktop/Main-OCR/data/Cameo global/34971463_S_NASLIP_page1.pdf",
+  "output_file": "/Users/apple/Desktop/Main-OCR/data/Cameo global/ocr_output/34971463_S_NASLIP_page1.md",
+  "model": "marker_model",
+  "processed_at": "2026-07-13T16:23:44",
+  "elapsed_sec": 27.07,
+  "char_count": 5462
+}

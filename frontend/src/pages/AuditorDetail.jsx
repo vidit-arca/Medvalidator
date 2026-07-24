@@ -74,13 +74,13 @@ export function AuditorDetail() {
                     <div className="flex-1 relative flex items-center justify-center bg-zinc-950">
                         {bill.filename.toLowerCase().endsWith('.pdf') ? (
                             <iframe
-                                src={`http://localhost:8000/raw_storage/${bill.id}_${bill.filename}`}
+                                src={`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}/raw_storage/${bill.id}_${bill.filename}`}
                                 className="w-full h-full border-0"
                                 title="Original Document"
                             />
                         ) : (
                             <img
-                                src={`http://localhost:8000/raw_storage/${bill.id}_${bill.filename}`}
+                                src={`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}/raw_storage/${bill.id}_${bill.filename}`}
                                 alt="Original Bill"
                                 className="max-w-full max-h-full object-contain"
                             />

@@ -1,0 +1,8 @@
+{
+  "source_file": "/Users/apple/Desktop/Main-OCR/data/Cameo global/34979531_S_MEDICINEBILL_page1.pdf",
+  "output_file": "/Users/apple/Desktop/Main-OCR/data/Cameo global/ocr_output/34979531_S_MEDICINEBILL_page1.md",
+  "model": "marker_model",
+  "processed_at": "2026-07-13T16:25:35",
+  "elapsed_sec": 15.8,
+  "char_count": 4627
+}

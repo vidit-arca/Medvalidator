@@ -1,5 +1,6 @@
 services:
   backend:
+    restart: always
     build:
       context: .
       dockerfile: Dockerfile
@@ -7,17 +8,14 @@ services:
     ports:
       - "8000:8000"
     environment:
-      # Use PostgreSQL instead of SQLite
-      - DATABASE_URL=postgresql://user:password@db:5432/medical_bills
-      - REDIS_URL=redis://redis:6379
+      # Connect to your server's native Postgres 15 database
+      - DATABASE_URL=postgresql://postgres:Password@123@host.docker.internal:5432/matrix
+      
       # Connect to external Ollama instance
       - OLLAMA_BASE_URL=http://192.168.112.2:11434
     volumes:
       # Keep raw_storage mounted to host for persistence of uploaded files
       - ./raw_storage:/app/raw_storage
-    depends_on:
-      - db
-      - redis
 
   frontend:
     build:
@@ -28,22 +26,3 @@ services:
       - "3000:80"
     depends_on:
       - backend
-
-  db:
-    image: postgres:15
-    environment:
-      POSTGRES_USER: user
-      POSTGRES_PASSWORD: password
-      POSTGRES_DB: medical_bills
-    ports:
-      - "5432:5432"
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-
-  redis:
-    image: redis:7
-    ports:
-      - "6379:6379"
-
-volumes:
-  postgres_data:
